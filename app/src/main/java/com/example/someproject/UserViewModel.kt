@@ -1,7 +1,9 @@
 package com.example.someproject
 
+import android.content.Intent
 import android.preference.PreferenceActivity.Header
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -11,16 +13,13 @@ import com.loopj.android.http.AsyncHttpResponseHandler
 import com.loopj.android.http.RequestParams
 
 class UserViewModel : ViewModel() {
-    private val _users = MutableLiveData<List<UserModel>>()
-    val users: LiveData<List<UserModel>> = _users
+    private val _user = MutableLiveData<UserModel>()
+    val user: LiveData<UserModel> = _user
+    //val name = MutableLiveData<String>()
 
     fun getUsers(login:String) {
         val url = "http://10.0.2.2:8000/users/select?login=$login"
-        //val url = "https://api.speedsolver.ru/v1/access/register"
         val client = AsyncHttpClient()
-        val params = RequestParams()
-        params.put("param1", login)
-        //params.put("param2", password)
         client.get(url, object : AsyncHttpResponseHandler() {
             override fun onSuccess(
                 statusCode: Int,
@@ -28,14 +27,15 @@ class UserViewModel : ViewModel() {
                 responseBody: ByteArray
             ) {
                 val result = String(responseBody)
+                Log.d("UserViewModel", "Success: $result")
                 val gson = Gson()
                 try{
-                    val User = gson.fromJson(result, UserResponceModel::class.java)
-                    _users.postValue(User.users)
+                    val User = gson.fromJson(result, UserModel::class.java)
+                    _user.postValue(User)
+
                 }
                 catch (e: Exception){
-                    Log.e("FilmViewModel", "Error parsing JSON:${e.message}")
-                    _users.postValue(emptyList())
+                    Log.e("UserViewModel", "Error parsing JSON:${e.message}")
                 }
 
             }
@@ -47,8 +47,16 @@ class UserViewModel : ViewModel() {
                 error: Throwable
             ) {
                 Log.e("UserViewModel", "Error parsing JSON:${error.message}")
-                _users.postValue(emptyList())
+            }
+
+            override fun onFinish() {
+                super.onFinish()
+                Log.d("UserViewModel", "Request finished")
             }
         })
+    }
+    override fun onCleared() {
+        super.onCleared()
+        Log.d("UserViewModel", "ViewModel cleared")
     }
 }

@@ -53,8 +53,8 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun Greeting() {
-        val viewModel: UserViewModel = viewModel()
-        val users by viewModel.users.observeAsState(initial = emptyList())
+
+        //val name by viewModel.name.observeAsState()
         var login = remember { mutableStateOf("")}
         var password = remember { mutableStateOf("") }
 
@@ -78,18 +78,23 @@ class MainActivity : ComponentActivity() {
                     label = { Text("*********")},
                     visualTransformation = PwdTransformation()
                 )
+                val viewModel: UserViewModel = viewModel()
+                val user by viewModel.user.observeAsState()
+
                 Button(
                     modifier = Modifier.height(60.dp).width(240.dp),
                     content = { Text("Войти")},
                     onClick = {
+
                         UserViewModel().getUsers(login.value)
-                        if (users.isEmpty()){
-                            Toast.makeText(applicationContext, "User doesn't exist", Toast.LENGTH_LONG)
-                                .show()
-                        }
-                        else{
+                        if (user == null){
                             val intent = Intent(applicationContext, SecondScreen::class.java)
                             startActivity(intent)
+                        }
+                        else{
+
+                            Toast.makeText(applicationContext, "User doesn't exist", Toast.LENGTH_LONG)
+                                .show()
                         }
                     }
                 )
